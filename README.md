@@ -3,8 +3,10 @@
 debug status: still on "True"
 
 # description
-project is 'djangox...'
+project is 'djangox_project'
+
 app is called 'pages'
+
 'users' app is used to allow login with email and password instead of usernames and password.
 
 # main tables in database
