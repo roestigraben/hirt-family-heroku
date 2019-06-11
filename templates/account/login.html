@@ -1,0 +1,23 @@
+{% extends '_base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Log in{% endblock %}
+
+{% block content %}
+<div class="loginContainer">
+<h1>Log in</h1>
+<form method="post">
+  {% csrf_token %}
+  <table>{{ form.as_table }}</table>
+  
+  <button class="btn btn-success" type="submit" style="background-color: lightgrey">Log in</button>
+
+  <!-- <button style="background-color: #ddd;"><a href="{% url 'account_reset_password' %}" style="color:black; text-decoration: none;">Forgot
+    Password?</a></button> -->
+
+</form>
+<p>if your login does not work, please sign-up for a new account below!</p>
+<a href="{% url 'account_signup' %}"><button class="btn btn-default btn-sm">Sign up</button></a>
+
+{% endblock content %}
+</div>

@@ -1,0 +1,362 @@
+{% extends '_base.html' %}
+
+{% load static %}
+
+{% block secondarycss %}
+<link rel="stylesheet" href="{% static 'css/optional.css' %}">
+{% endblock %}
+
+{% block title %}Single Family{% endblock %}
+
+{% block content %}
+{% if user.is_authenticated %}
+
+{% if user.is_authenticated %}
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                data-target="#bs-example-navbar-collapse-2" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="{% url 'home' %}"><img src="{% static 'images/favicon.ico' %}"><span>Family
+                    Tree</span></a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-2">
+            <ul class="nav navbar-nav">
+                {% if view.clan_name == 'Hirt' %}
+                <li> <a href="{% url 'home' %}">Back</a></li>
+                {% endif %}
+                {% if view.clan_name == 'Schwab' %}
+                <li> <a href="{% url 'clan' family_id=2 %}">Back</a></li>
+                {% endif %}
+                {% if view.clan_name == 'Surian' %}
+                <li> <a href="{% url 'clan' family_id=3 %}">Back</a></li>
+                {% endif %}
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="{% url 'account_change_password' %}">Change password</a></li>
+                <li><a href="{% url 'account_logout' %}">Logout</a></li>
+                {% if user.is_superuser %}
+                <li><a href="{% url 'tree' %}">Edit</a></li>
+                {% endif %}
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+{% endif %}
+<div class="container">
+    <div id="familyDetails" class="content row">
+
+        <!-- GET EDGE - HORIZONTAL LINES - DATA -->
+        {% for e in view.edges %}
+            <!-- horizontal lines for children-->
+            <div class="borderTop" style="width: {{e.width_children}}px; top:410px;left: {{e.x_pos_children}}px;"></div>
+        {% endfor %}
+
+        <!-- GET EDGE - HORIZONTAL LINES - DATA -->
+        {% for ee in view.edgesSibling %}
+        <!-- horizontal lines for siblings -->
+            {% if ee.has_siblings == True %}
+            <div class="borderTop" style="width: {{ee.width_siblings}}px; top:170px;left: 155px;"></div>
+            {% endif %}
+        {% endfor %}
+        
+        <!--  PARENTS -->
+        {% for parent in view.parents %}
+            <a href="{% url 'memberDetail' pk=parent.id %}">
+                <div id="{{ parent.id }}" class="person" style="top:{{ parent.y_pos}}px;left: {{ parent.x_pos}}px;">
+                <img src="{% get_static_prefix %}images/{{parent.thumbnail}}" onerror="this.onerror=null;this.src='{% get_static_prefix %}images/avatar.png';">
+                <p>{{ parent.first_name }} {{ parent.last_name}}</p>
+            
+                <p>{% if not parent.date_of_death %}geb: {% endif %}{{ parent.birth_date }}
+                    {% if parent.date_of_death %}
+                    - {{ parent.date_of_death }}
+                    {% endif %}
+                </p>
+            </div>
+            </a>
+        {% endfor %}
+        
+        <!--  SELECTED PERSON -->
+        {% for p in view.person %}
+            <div style="padding-left: 300px">
+                <h1>{{ p.first_name }} {{ p.last_name}}</h1>
+                <h5><span class="small">von   :</span>  {{ p.city }}</h5>
+                {% if p.profession %}
+                <h5><span class="small">Beruf :</span> {{ p.profession }}</h5>
+                {% endif %}
+                
+            </div>
+            {% if p.has_parents == True %}
+            <div class="borderLeft familyDetail" style="top:{{ p.y_pos|add:-100}}px;left: {{ p.x_pos|add:55}}px;"></div>
+            {% endif %}
+            <div id="{{ p.id }}" class="person large" style="top: {{ p.y_pos}}px; left: {{ p.x_pos}}px;">
+                <img src="{% get_static_prefix %}images/{{p.thumbnail}}" onerror="this.onerror=null;this.src='{% get_static_prefix %}images/avatar.png';">
+                <p style="font-size: 16px;">{{ p.first_name }} {{ p.last_name}}</p>
+                
+                <p>{% if p.birth_date > 0 %}
+                    {% if not p.date_of_death %}geb: {% endif %}{{ p.birth_date }}
+                    {% if p.date_of_death %}
+                    - {{ p.date_of_death }}
+                    {% endif %}
+                    {% endif %}
+                </p>
+            </div>
+            {% if p.has_children == True %}
+            <div class="borderLeft familyDetail" style="top:{{ p.y_pos|add:110}}px;left: {{ p.x_pos|add:55}}px;"></div>
+            {% endif %} 
+            
+        {% endfor %}
+    
+        <!--  PARTNER -->
+        {% for p in view.partner %}
+            <a href="{% url 'memberDetail' pk=p.id %}">
+            <div id="{{ p.id }}" class="person" style="top: {{ p.y_pos}}px; left: {{ p.x_pos}}px;">
+                <img src="{% get_static_prefix %}images/{{p.thumbnail}}" onerror="this.onerror=null;this.src='{% get_static_prefix %}images/avatar.png';">
+                <p>{{ p.first_name }} {{ p.last_name}}</p>
+
+                <p>{% if not p.date_of_death %}geb: {% endif %}{{ p.birth_date }}
+                    {% if p.date_of_death %}
+                    - {{ p.date_of_death }}
+                    {% endif %}
+                </p>
+            </div>
+            </a>
+        {% endfor %}
+        
+        <!-- BROTHERS & SISTERS -->
+        {% for sibling in view.siblings %}
+            <div class="borderLeft familyDetail" style="top:{{ sibling.y_pos|add:-30}}px;left: {{ sibling.x_pos|add:25}}px;"></div>
+            <a href="{% url 'memberDetail' pk=sibling.id %}">
+            <div id="{{ sibling.id }}" class="person" style="top:{{ sibling.y_pos}}px; left: {{ sibling.x_pos}}px;">
+
+                <img src="{% get_static_prefix %}images/{{sibling.thumbnail}}" onerror="this.onerror=null;this.src='{% get_static_prefix %}images/avatar.png';">
+                <p>{{ sibling.first_name }} {{ sibling.last_name}}</p>
+            
+                <p>{% if not sibling.date_of_death %}geb: {% endif %}{{ sibling.birth_date }}
+                    {% if sibling.date_of_death %}
+                    - {{ sibling.date_of_death }}
+                    {% endif %}
+                </p>
+            </div>
+            </a>
+        {% endfor %}
+
+        <!-- CHILDREN -->
+        {% for child in view.children %}
+            
+            <!-- horizontal lines for siblings and children-->
+            <div class="borderLeft familyDetail" style="top:{{ child.y_pos|add:-30}}px;left: {{ child.x_pos|add:25}}px;"></div>
+            <a href="{% url 'memberDetail' pk=child.id %}">
+            <div id="{{ view.child.id }}" class="person" style="top:{{ child.y_pos}}px;left: {{ child.x_pos}}px;">
+                <img src="{% get_static_prefix %}images/{{child.thumbnail}}" onerror="this.onerror=null;this.src='{% get_static_prefix %}images/avatar.png';">
+                <p>{{ child.first_name }} {{ child.last_name}}</p>
+                
+                <p>{% if not child.date_of_death %}geb: {% endif %}{{ child.birth_date }}
+                    {% if child.date_of_death %}
+                    - {{ child.date_of_death }}
+                    {% endif %}
+                </p>
+
+            </div>
+            </a>
+        {% endfor %}
+    </div>
+
+    <div id="familyDetailsOptions">
+
+        {% if view.photos %}
+        <button class="modalBtn" onclick="showModal()">Photos 
+            {% if view.photos|length > 1 %}
+            <span>  (there are {{ view.photos|length }} photos)</span>
+            {% else %}
+            <span> (there is {{ view.photos|length }} photos)</span>
+            {% endif %}
+        </button>
+        {% endif %}
+
+        <div id="accordion">
+            
+
+            <!-- {% if view.photos %}
+                <h3>Photos</h3>
+                <div>
+                    <div class="photoContainer" style="padding:0px;">
+                        {% for photo in view.photos %}
+                        <img class="mySlides" src="{% static photo.source %}">
+                        {% endfor %}
+
+                        <div class="controller">
+                            <div class="arrowLeft" onclick="plusDivs(-1)">&#10094;</div>
+                            <div class="arrowRight" onclick="plusDivs(1)">&#10095;</div>
+                            {% for photo in view.photos %}
+                            <span class="badge dot" onclick="currentDiv({{photo.id}})"></span>
+                            {% endfor %}
+
+                        </div>
+                    </div>
+                </div>
+            {% endif %} -->
+            
+            {% if view.accordeonContent %}
+                {% for text in view.accordeonContent %}
+                    <h3>{{ text.title }}</h3>
+                    <div>
+                        <p style="padding: 0.5em 1.5em">
+                            {{ text.text|safe }}
+                        </p>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+    
+</div>
+
+<div id="myModal" class="modalPhotos">
+    <!-- The Close Button -->
+    <span class="closeBtn" onclick="closeModal()">&times;</span>
+
+    <!-- Modal Content (The Image) -->
+    <div class="modalPhoto-content" id="">
+        <!-- Slideshow container -->
+        <div class="slideshow-container">
+            
+            {% for photo in view.photos %}
+            <div class="mySlides fadePhoto">
+                <div class="numbertext">{{forloop.counter}}/ {{ view.photos|length }}</div>
+                <img src="{% static photo.source %}" style="width:100%">
+                <div class="text">{{ photo.title }}</div>
+                <div id="caption">{{ photo.caption }}</div>
+            </div>
+            {% endfor %}
+            
+            
+            <!-- Next and previous buttons -->
+            <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+            <a class="next" onclick="plusSlides(1)">&#10095;</a>
+        </div>
+        <br>
+
+        <!-- The dots/circles -->
+        <div style="text-align:center">
+            {% for photo in view.photos %}
+            <span class="dot" onclick="currentSlide( {{forloop.counter}} )"></span>
+            {% endfor %}
+        </div>
+    </div>   
+</div>
+
+
+{% else %}
+<li><a href="{% url 'home' %}">Login</a></li>
+{% endif %}
+
+
+{% endblock content %}
+
+{% block javascript %}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="{% static 'js/jquery-ui.min.js' %}"></script>
+<!-- Project JS -->
+
+<!-- <script src="{% static 'js/base1.js' %}"></script> -->
+<script type="application/javascript">
+$( function() {
+
+    $("body").css("overflow", "");
+
+    $( "#accordion" ).accordion({
+        collapsible: true, 
+        active: false,
+        autoHeight: false,
+        clearStyle: true,
+        heightStyle: "content"
+    });
+} );
+
+var slideIndex = 1;
+
+function showSlides(n) {
+    var i;
+    var slides = document.getElementsByClassName("mySlides");
+    var dots = document.getElementsByClassName("dot");
+    if (n > slides.length) {
+        slideIndex = 1
+    }
+    if (n < 1) { 
+        slideIndex=slides.length 
+    } 
+    for (i=0; i < slides.length; i++) { 
+        slides[i].style.display="none" ; 
+    } 
+    for (i=0; i < dots.length; i++) { 
+        dots[i].className=dots[i].className.replace(" active", "" ); 
+    } 
+    slides[slideIndex-1].style.display="block" ; 
+    dots[slideIndex-1].className +=" active" ; 
+} 
+
+showSlides(slideIndex);
+
+function plusSlides(n) {
+showSlides(slideIndex += n);
+}
+
+function currentSlide(n) {
+showSlides(slideIndex = n);
+}
+
+function showModal() { 
+    //console.log("modal appears");
+    document.getElementById('myModal').style.display="block" ; 
+} 
+
+function closeModal() { 
+    //console.log("modal dissapears"); 
+    document.getElementById('myModal').style.display="none" ; 
+}
+
+    
+
+    // slide show control
+    // var slideIndex = 1;
+
+    // showDivs(slideIndex);
+
+    // function plusDivs(n) {
+    // showDivs(slideIndex += n);
+    // }
+
+    // function currentDiv(n) {
+    // showDivs(slideIndex = n);
+    // }
+
+    // function showDivs(n) {
+    //     var i;
+    //     var x = document.getElementsByClassName("mySlides");
+    //     var dots = document.getElementsByClassName("dot");
+    //     if (n > x.length) {slideIndex = 1}
+    //     if (n < 1) {slideIndex=x.length} 
+    //     for (i=0; i < x.length; i++) { 
+    //         x[i].style.display="none" ; 
+    //     } 
+    //     for (i=0; i < dots.length; i++) { 
+    //         dots[i].className=dots[i].className.replace(" white", "" ); 
+    //     }
+    //     x[slideIndex-1].style.display="block" ; 
+    //     dots[slideIndex-1].className +=" white" ; 
+    // }
+</script>
+
+
+
+{% endblock javascript %}

@@ -1,0 +1,279 @@
+{% extends '_base.html' %}
+{% load static %}
+
+{% block title %}Home page{% endblock title %}
+
+{% block content %}
+
+
+  {% if user.is_authenticated %}
+    <nav class="navbar navbar-default">
+      <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+            data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#"><img src="{% static 'images/favicon.ico' %}"><span>Family Tree</span></a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav">
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                aria-expanded="false">Select Family <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="{% url 'clan' family_id=1 %}">Hirt</a></li>
+                <li><a href="{% url 'clan' family_id=2 %}">Schwab</a></li>
+                <li><a href="{% url 'clan' family_id=3 %}">Surian</a></li>
+              </ul>
+            </li>
+          </ul>
+          <form class="navbar-form navbar-left">
+            <div class="form-group">
+              <input id="mySearch" type="text" class="form-control" placeholder="Search person">
+            </div>
+          </form>
+          
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="{% url 'account_change_password' %}">Change password</a></li>
+            <li><a href="{% url 'account_logout' %}">Logout</a></li>
+            {% if user.is_superuser %}
+            <li><a href="{% url 'tree' %}">Edit</a></li>
+            {% endif %}
+          </ul>
+        </div><!-- /.navbar-collapse -->
+      </div><!-- /.container-fluid -->
+    </nav>
+  {% else %}
+   
+    <div class=containerHome>
+      <div class="flexBox" style="display: flex;flex-flow: row wrap;justify-content: center;margin-top:50px;">
+        <a href="{% url 'account_login' %}"><button class="btn btn-default btn-sm">Log in</button></a>
+        <a href="{% url 'account_signup' %}"><button class="btn btn-default btn-sm">Sign up</button></a>
+      </div>
+      <h1 style="text-align: center; padding-top: 100px; margin-top: 0px;">Welcome to the Family tree</h1>
+      <div class="frame">
+        <img src="../../static/images/abrahamHirtSenior.png">
+        
+      </div>
+    </div>
+  {% endif %}
+
+
+{% if user.is_authenticated %}
+  
+    
+  <div id="myContainer" class="content" >
+    {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+      <li class="{{ message.tags }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+
+    
+    {% if view.clan_name == 'Hirt' %}
+    <div id="{{ view.clan_name }}" class="family">
+    {% endif %}
+
+    {% if view.clan_name == 'Schwab' %}
+    <div id="{{ view.clan_name }}" class="family" style="left:-1600px;top: 300px">
+    {% endif %}
+
+    {% if view.clan_name == 'Surian' %}
+    <div id="{{ view.clan_name }}" class="family" style="left:-2300px;">
+    {% endif %}
+      
+      {% for person in view.family %}
+        <a href="{% url 'memberDetail' pk=person.id %}">
+        
+        <div id="{{ person.id }}" class="person" style="left: {{person.x_pos|add:'-0'}}px; top: {{person.y_pos}}px;">
+        
+          <img src="{% get_static_prefix %}images/{{person.thumbnail}}" onerror="this.onerror=null;this.src='{% get_static_prefix %}images/avatar.png';">
+          <p>{{ person.first_name }} {{ person.last_name}}</p>
+          <!-- <p>{{ person.profession }}</p> -->
+          <p>
+            {% if person.birth_date > 0 %}
+                {% if not person.date_of_death %}
+                  {% if view.clan_name == 'Surian' %}
+                      nato:
+                      {% else %}
+                      geb: 
+                    {% endif %}
+                {% endif %}
+                {{ person.birth_date }}
+                {% if person.date_of_death %}
+                  - {{ person.date_of_death }}
+                {% endif %}
+            {% endif %}
+            {% if person.opt %}
+            <div class="optionalInfo"></div>
+            {% endif %}
+          </p>
+        </div>
+        </a>
+
+      {% endfor %}
+    </div>
+
+    
+    
+  </div>
+
+  <div class="familyName">
+    {% if view.clan_name == 'Hirt' %}
+      <h1>{{ view.clan_name }} Family</h1>
+    {% endif %}
+
+    {% if view.clan_name == 'Schwab' %}
+      <h1>{{ view.clan_name }} & Stuber Family</h1>
+    {% endif %}
+
+    {% if view.clan_name == 'Surian' %}
+      <h1>{{ view.clan_name }} & Dantomio Family</h1>
+    {% endif %}
+  </div>
+  <!-- <p class="maintenance">under maintenance</p> -->
+  <button class="zoomButton" onclick="zoomIn()" style="right: 10px; top: 117px;">+</button>
+  <button class="zoomButton" onclick="zoomOut()" style="right: 10px; top: 65px;">-</button>
+  <button class="zoomButton" onclick="fitScreen()" style="right: 10px; top: 169px;"><img src="{% static 'images/icons8-expand-24.png' %}"></button>
+
+  <!-- <button class="zoomButton" onclick="getData()" style="right: 10px; top: 215px;">Data</button> -->
+
+    
+{% endif %}
+
+
+
+{% endblock content %}
+
+{% block javascript %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+  integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<!--<script src="https://cdn.rawgit.com/SpencerWie/Panzoom/1cc9755f/dist/panzoom.min.js"></script> -->
+<script src="{% static 'js/jquery-ui.min.js' %}"></script>
+<script src="{% static 'js/panzoom.js' %}"></script>
+<script src="{% static 'js/home.js' %}"></script>
+<script type="application/javascript">
+
+
+$(document).ready(function() {
+  // no scroll bars on this as it interferes with the panzoom features
+  $("body").css("overflow","hidden");
+
+  
+
+  names = []
+  fullNames = []
+
+  $.ajax({
+    url: {% url 'getNames' %},
+    type: 'get',
+    success: function (data) {
+      // console.log(data[0].full_name);
+      for (i = 0; i < data.length; i++) { 
+        names.push(data[i].full_name)
+        fullNames.push(data[i])
+        //console.log(i, data[i]); 
+      }
+      //console.log("the source of the autocomplete is : ", names)
+    },
+    failure: function (data) {
+      console.log('Got an error, dude'); 
+    } 
+  });
+
+  
+
+  //
+  // fill the dropdown list with names (Select Family drowpdown)
+  //
+  $("#mySearch").autocomplete({
+    source: names,
+    select: function (event, ui){
+
+        //console.log("ui : ", ui);
+        for (let i = 0; i < fullNames.length; i++) {
+          console.log(fullNames[i].full_name, ' <--->   ',ui.item.value)
+          if( ui.item.value == fullNames[i].full_name){
+            
+            personId = parseInt(fullNames[i].id)
+            // console.log("the id of the person is : ", fullNames[i], personId)
+            var urlX = "{% url 'memberDetail' pk=99999 %}".replace (99999, personId);
+            
+            window.location.href = urlX;
+          }
+        }
+    }
+  });
+
+  //
+  // Connections between Parents / Children
+  //
+  familyName = '{{ view.clan_name }}'
+  
+
+  $.ajax({
+    url: {% url 'edgesX' %},
+    type: 'get',
+    success: function (data) {
+      // console.log('response from ajax : ', data)
+
+      if(familyName=='Hirt'){
+        data = data[0];
+      }
+      if(familyName=='Schwab'){
+      data = data[1];
+      }
+      if(familyName=='Surian'){
+      data = data[2];
+      }
+      // console.log(data);
+
+      //localStorage.setItem(familyName, JSON.stringify(data));
+
+      for (i = 0; i < data.length; i++) { 
+        //console.log('ajax ', i, data[i]);
+        drawEdges(data[i],i); 
+      }
+      
+    }, failure: function (data) {
+      console.log(' Got an error, dude'); 
+    } 
+  });
+
+  
+
+  if(familyName=='Hirt'){
+    familyId = '1';
+    
+  }
+  if(familyName=='Schwab'){
+    familyId = '2';
+    
+  }
+  if(familyName=='Surian'){
+    familyId = '3';
+    
+  }
+  
+   
+
+});
+
+
+  
+</script>
+{% endblock javascript %}
+
+
+

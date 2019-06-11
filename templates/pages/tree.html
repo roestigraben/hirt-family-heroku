@@ -1,0 +1,167 @@
+{% extends '_base.html' %}
+{% load static %}
+
+{% block title %}The tree{% endblock %}
+
+{% block content %}
+
+
+
+{% if user.is_authenticated %}
+  <nav class="navbar navbar-default">
+    <div class="container-fluid">
+      <!-- Brand and toggle get grouped for better mobile display -->
+      <div class="navbar-header">
+        
+        <a class="navbar-brand" href="#"><img src="{% static 'images/favicon.ico' %}"><span>Family Tree</span></a>
+      </div>
+
+      <!-- Collect the nav links, forms, and other content for toggling -->
+      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <ul class="nav navbar-nav">
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+              aria-expanded="false">Select Family <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="{% url 'clanEdit' family_id=1 %}">Hirt</a></li>
+              <li><a href="{% url 'clanEdit' family_id=2 %}">Schwab</a></li>
+              <li><a href="{% url 'clanEdit' family_id=3 %}">Surian</a></li>
+            </ul>
+          </li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+              aria-expanded="false">Select Operation <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="{% url 'addPerson' %}">Add Person</a></li>
+              <li><a href="{% url 'addRelation' %}">Add Relation</a></li>
+              <li><button onclick="addPersonCsv()">Add Person csv file</button></li>
+              <li><button onclick="addEdgeCsv()">Add Edge csv file</button></li>
+              <li><button onclick="addPerson()">Add Person</button></li>
+              <li><button onclick="addEdge()">Add Edge</button></li>
+            </ul>
+          </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          {% if user.is_superuser %}
+          <li><a href="{% url 'home' %}">Home</a></li>
+          <li><a href="{% url 'exportCSV' %}">Export CSV</a></li>
+          <li><a href="{% url 'exportEdges' %}">Export Edges</a></li>
+          <!-- <button class="btn btn-xs btn-default" onclick="toggle()">Toggle</button> -->
+        
+          {% endif %}
+        </ul>
+      </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+  </nav>
+
+  <div id="myEditContainer" class="content">
+    
+        <!-- <form action="{% url 'upload_csv' %}" method="POST" enctype="multipart/form-data" class="form-horizontal">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="name" class="col-md-1 col-sm-1 col-xs-11 control-label">Person File: </label>
+            <div>
+              <input type="file" name="csv_file" id="csv_file" required="True" class="form-control">
+            </div>
+          </div>
+          <div class="form-group">
+            <div style="margin-bottom:10px;">
+              <button class="btn btn-xs btn-success">Upload</button>
+            </div>
+          </div>
+        </form>
+  
+    <div id="personFile" class="loaderContainer col-xs-1">
+      <p><span class="small">csv separator must be ',' file extension must be 'csv', dates should be set to zero if not populated</span></p>
+      <p><span class="small">format of csv file: first_name, last_name, profession, city, birth_date, date_of_death,
+          x_pos, y_pos</span></p>
+      <p><span class="small">format of edge csv file: empty,child_id, parent_id</span></p>
+    
+      
+    </div> -->
+    <div id="edgeFile"  class="loaderContainer col-xs-1 hidden">
+      <form action="{% url "upload_edges" %}" method="POST" enctype="multipart/form-data" class="form-horizontal">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="name" class="col-md-3 col-sm-3 col-xs-12 control-label">Edge File: </label>
+          <div>
+            <input type="file" name="csv_file" id="csv_file" required="True" class="form-control">
+          </div>
+        </div>
+        <div class="form-group">
+          <div style="margin-bottom:10px;">
+            <button class="btn btn-xs btn-success">Upload</button>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div id="addPerson" class="col-xs-2 hidden" style="background-color:gainsboro;height:400px;">
+      Person
+      <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Save">
+      </form>
+    
+    </div>
+    <div id="addEdge" class="col-xs-2 hidden" style="background-color:greenyellow;height:200px;">
+      Edge
+      <button><a href="{% url 'addRelation' %}">Add</a></button>
+    </div>
+
+    <div style="position:absolute; top:100px;left:910px;">
+      <h1>{{ view.clan_name }} Family</h1>
+    </div>
+    <div id="{{ view.clan_name }}" class="family">
+
+    
+    
+
+      {% for person in view.family %}
+        
+        <div id="{{ person.id }}" class="person" style="left: {{person.x_pos|add:'0'}}px; top: {{person.y_pos}}px;">
+          <img src="{% get_static_prefix %}images/{{person.thumbnail}}" onerror="this.onerror=null;this.src='{% get_static_prefix %}images/avatar.png';">
+          <p>{{ person.first_name }} {{ person.last_name}}</p>
+          
+          <div class="id">ID : {{ person.id }}
+            <p>x:{{person.x_pos}}, y:{{person.y_pos}}</p>
+          </div>
+        </div>
+
+      {% endfor %}
+    </div>
+    
+    
+  </div>
+        
+{% else %}
+  <li><a href="{% url 'home' %}">Login</a></li>   
+{% endif %} 
+
+
+{% endblock content %}
+
+{% block javascript %}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+  integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="{% static 'js/jquery-ui.min.js' %}"></script>
+<!-- Project JS -->
+<script src="{% static 'js/edit.js' %}"></script>
+<script type="application/javascript">
+  $.ajax({
+    url: {% url 'edges' %},
+        type: 'get', 
+    success: function (data) {
+      drawEdges(data);
+    },
+    failure: function (data) {
+      console.log('Got an error, dude');
+    }
+  }); 
+</script>
+
+
+
+{% endblock javascript %}

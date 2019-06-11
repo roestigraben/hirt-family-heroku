@@ -1,0 +1,20 @@
+{% extends '_base.html' %}
+{% load static %}
+
+{% block title %}The Edge Form{% endblock %}
+
+{% block content %}
+
+{% if user.is_authenticated %}
+<H1>Add Edge</H1>
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Save">
+</form>
+{% else %}
+<li><a href="{% url 'home' %}">Login</a></li>
+{% endif %}
+
+{% endblock content %}
+
