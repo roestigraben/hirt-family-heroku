@@ -2,6 +2,11 @@
 
 debug status: still on "True"
 
+# description
+project is 'djangox...'
+app is called 'pages'
+'users' app is used to allow login with email and password instead of usernames and password.
+
 # main tables in database
 
 persons :  all data for individual persons like name, address, birth dates, profession etc
